@@ -1,0 +1,2 @@
+# The README file is created using 
+pandoc -s Doc_.tex -o README.md
