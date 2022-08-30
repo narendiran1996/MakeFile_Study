@@ -110,7 +110,7 @@ my_rule3 : source.c
 \begin{itemize}
     \item Used inside the command below the build rule.
     \item \emph{@} takes the left hand side of build rule.
-    \item \emph{\^} takes the right hand side of build rule.
+    \item \textasciicircum takes the right hand side of build rule.
           \begin{minted}[breaklines, frame=lines]{make}
     source.o : source.c
         gcc -c $^ -o $@
