@@ -1,0 +1,232 @@
+\documentclass{article}
+\usepackage[a4paper,margin=0.5in]{geometry}
+\usepackage{enumitem}
+\usepackage{minted}
+\usepackage{hyperref}
+
+\begin{document}
+\large
+
+\textbf{Source : \href{https://youtu.be/DtGrdB8wQ_8}{Makefiles: 95\% of what you need to know - Gabriel Parmer}}
+
+\section{Introduction}
+\begin{itemize}
+    \item It a build system.
+          \begin{enumerate}[label=\roman*)]
+              \item Automate the compilation and linking of source files into \emph{exectutables}.
+              \item Recompilation on only the changed portion of source code and the portion dependant on the changed code.
+              \item Make maintaining the build system easier by avoiding redudant code in build system.
+          \end{enumerate}
+    \item Used by any compiled language.
+          \begin{itemize}
+              \item C
+              \item C++
+              \item Fortran
+              \item Latex
+          \end{itemize}
+\end{itemize}
+
+\subsection{Printing}
+\begin{itemize}
+    \item To print Text, one can use any of the following:
+          \begin{minted}[breaklines, frame=lines]{make}
+    $(info This is an info text)
+    $(warning This is an warning text)
+    $(error This is an error text)
+    \end{minted}
+    \item Printing an \mintinline{make}{$(error)} will make the execution stop.
+\end{itemize}
+
+
+\subsection{Variables}
+\begin{itemize}
+    \item Variables in MakeFile are defines as
+          \begin{minted}[frame=lines]{make}
+    VARNAME = VALUE
+    \end{minted}
+    \item They can be used with the help of dollar symbol (\$).
+          \begin{minted}[frame=lines]{make}
+    PIVALUE = 3.14
+    $(info Checking the Variable $(PIVALUE)) 
+    \end{minted}
+\end{itemize}
+
+
+\subsection{Build Rule}
+\begin{itemize}
+    \item Every rule starts with a target (which is going to be built) followed by colon (:) followed by the dependencies the target require.
+    \item The next line may or may not contain commands to exectue to get the dependencies.
+    \item The dependencies may be
+          \begin{itemize}
+              \item Files
+              \item Other Build Rules
+          \end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Build rule depending on files}
+\begin{minted}[breaklines, frame=lines]{make}
+my_rule1 : source.c test.c
+    gcc -c source.c -o source.o
+\end{minted}
+\begin{itemize}
+    \item In this case, the \emph{my\_rule1} build rule will run only when \emph{source.c} and \emph{test.c} are available.
+    \item Even if \emph{test.c} is not used in the command, since it is present as dependencies, \emph{test.c} must be available for \emph{my\_rule} to be executed.
+\end{itemize}
+
+
+\subsubsection{Build rule depending on other build rules}
+\begin{minted}[breaklines, frame=lines]{make}
+my_rule1 : my_rule2
+
+my_rule2 : my_rule3
+    gcc source.o -o source.bin
+
+my_rule3 : source.c
+    gcc -c source.c -o soruce.o
+\end{minted}
+\begin{itemize}
+    \item In this case, \emph{my\_rule1} depends on \emph{my\_rule2} which in turn depends on \emph{my\_rule3} which in turn depends on \emph{source.c}.
+    \item Here, only \emph{my\_rule2} and \emph{my\_rule3} has commands and those executed, when their correspoding dependancies are met.
+\end{itemize}
+
+\subsection{Build Rule with \emph{wildcards}}
+\begin{itemize}
+    \item Here, \emph{wildcards} are denoted by \emph{\%}.
+    \item \emph{\%} denotes to any text.
+\end{itemize}
+\begin{minted}[breaklines, frame=lines]{make}
+%.o : %.c
+\end{minted}
+\begin{itemize}
+    \item \textbf{The above build rule indicates, to build anytext.o, then the dependency is the sametext.c}.
+    \item This can be used to build any \emph{*.o}.
+\end{itemize}
+
+
+
+\subsubsection{Make special varaibles}
+\begin{itemize}
+    \item Used inside the command below the build rule.
+    \item \emph{@} takes the left hand side of build rule.
+    \item \emph{\^} takes the right hand side of build rule.
+          \begin{minted}[breaklines, frame=lines]{make}
+    source.o : source.c
+        gcc -c $^ -o $@
+    \end{minted}
+    \item The above lines are same as:
+          \begin{minted}[breaklines, frame=lines]{make}
+    source.o : source.c
+        gcc -c source.c -o source.o
+    \end{minted}
+    \item \textbf{These special varaibles along with wildcards can be used to create a generic building of *.o files from *.c files}.
+          \begin{minted}[breaklines, frame=lines]{make}
+    %.o : %.c
+        gcc -c $^ -o $@
+    \end{minted}
+    \item But, they can run independently without a target, hence
+          \begin{minted}[breaklines, frame=lines]{make}
+    OBJFILES = test.o source.o
+
+    all : $(OBJFILES)
+    
+    %.o : %.c
+        gcc -c $^ -o $@
+    \end{minted}
+    \item Above, for every object files needed by \emph{all} build rule, the corresponding object files are created using \emph{\%.o} build rule.
+\end{itemize}
+
+
+\subsection{Building}
+\begin{itemize}
+    \item Builing is done with \emph{make}.
+    \item This will run the first build rule and not \emph{all} build rule.
+    \item Only if the dependencies changes, the build rules changes and this is propagated to other build rules which uses the dependencies.
+    \item \textbf{Generarlly, MakeFile doesn't look for program oriented dependencies,like header files.}
+    \item \textbf{\emph{@} symbol can be used to not to print the command.}
+\end{itemize}
+
+
+
+\section{Simple MakeFile Example}
+\quad A sample example MakeFile used for building code inside \emph{./Simple\_MakeFileSystem} is shown below:
+
+
+\inputminted[linenos, breaklines, frame=lines]{make}{./Simple_MakeFileSystem/Makefile}
+
+\subsection{Disadvantages}
+\begin{enumerate}[label=\Roman*)]
+    \item The \emph{make} command recompiles the code where there is a change in .c files as only those are the depeneded for creating .o files.
+          \begin{itemize}
+              \item But,when only the header content changes the command doesn't compile.
+          \end{itemize}
+    \item Also, the include directory is liminted to one.
+    \item In this, we have to give the .c and .o files.
+\end{enumerate}
+
+
+\section{Solving 2.1 - I)}
+\begin{itemize}
+    \item The particular problem, of header file not being seen can be solved by generating files (.d) that encodes make rule for .h dependencies.
+    \item This can be done by adding the flags to the GCC compiler
+          \begin{minted}[frame=lines]{make}
+    -MP -MD
+    \end{minted}
+    \item Now, this will create .d files for the .c files which has dependend over header files so as to be used by make build system.
+    \item We also need to clean the .d files.
+    \item Now, the new MakeFile is shown below:
+\end{itemize}
+
+\inputminted[linenos, breaklines, frame=lines]{make}{./Simple_MakeFileSystem_2_1_I/Makefile}
+
+\section{Solving 2.1 - II)}
+\begin{itemize}
+    \item \emph{+=} is used to append values to a varaible.
+    \item To solve the issue of multiple include directories, we use foreach loop whose syntax is:
+          \begin{minted}[frame=lines]{make}
+    $(foreach var, range, cmds)
+    \end{minted}
+    \item An example to print numbers from 1 to 4 using foreach loop:
+          \begin{minted}[frame=lines]{make}
+    range = 1 2 3 4
+    $(foreach i, $(range), $(info $(i)))
+    \end{minted}
+    \item Using the above information, now the make file can be made to have multiple include directories:
+\end{itemize}
+
+\inputminted[linenos, breaklines, frame=lines]{make}{./Simple_MakeFileSystem_2_1_II/Makefile}
+
+
+\section{Solving 2.1 - III)}
+\begin{itemize}
+    \item The problem of finding .c files in the directores can be solved intializing the C directories to look for.
+    \item Then, using foreach loop and wildcards, the .c files can be found using
+          \begin{minted}[frame=lines]{make}
+    CDIRS += .
+    CDIRS += ./src
+    
+    CFILES = $(foreach cdir, $(CDIRS), $(wildcard $(cdir)/*.c))
+
+    $(info $(CFILES))
+    \end{minted}
+    \item This will produce the output as:
+          \begin{framed}
+              ./prog.c  ./src/mod2.c ./src/mod1.c
+          \end{framed}
+    \item The object files to be created for each of the .c files in the same location so we use patsubst to get the .o files.
+          \begin{minted}[frame=lines]{make}
+    OBJFILES = $(patsubst %.c, %.o, $(CFILES))
+
+    $(info $(OBJFILES))
+    \end{minted}
+    \item This will produce the output as:
+          \begin{framed}
+              ./prog.o  ./src/mod2.o  ./src/mod1.o
+          \end{framed}
+    \item Now, the complete Make file will all the Disadvantages solved is given below:
+\end{itemize}
+
+\inputminted[linenos, breaklines, frame=lines]{make}{./Simple_MakeFileSystem_2_1_III/Makefile}
+
+\end{document}
