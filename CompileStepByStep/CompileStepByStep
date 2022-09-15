@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Preprocess only - no compilation, Assembly, Linking
+gcc -E program.c -o preprocessed_output.i
+
+# Compile only - no Assembly, Linking
+gcc -S preprocessed_output.i -o compiled_output.s
+
+# Asssemble - no Linking
+gcc -c compiled_output.s -o assembled_output.o
+
+# Linking - to get final execuable
+gcc assembled_output.o -o linked_executable_output.out
+
+# Running
+./linked_executable_output.out

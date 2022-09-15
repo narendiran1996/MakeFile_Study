@@ -54,7 +54,6 @@ main:
 	addss	%xmm1, %xmm0
 	movss	%xmm0, -4(%rbp)
 	cvtss2sd	-4(%rbp), %xmm0
-	call	round@PLT
 	leaq	.LC5(%rip), %rdi
 	movl	$1, %eax
 	call	printf@PLT
